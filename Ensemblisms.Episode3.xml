@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="22" zv="Cache for Windows (x86-32) 2009.1 (Build 378U)" ts="2009-04-29 11:28:35">
+<CSP name="CustomTemplates/NewDTL.csp" application="/csp/ensemble/" default="1"><![CDATA[
+<csp:StudioInteractiveTemplate name="Custom DTL" type="CLS" mode="new">
+
+<html>
+<head>
+<style type="text/css">
+<!--
+body 		{ color: black; background: #DDEEFF; 
+				font-family: Verdana,Arial,Helvetica,sans-serif;
+			 }
+			 
+input			{	font-family: Verdana,Arial,Helvetica,sans-serif; 
+					color: black;
+					font-size: 0.8em;
+				}
+
+td.Label		{	text-align: right;
+					font-size: 0.8em;
+					font-weight: bold;
+				}
+
+div.Description	{	font-size: 0.8em; }
+
+h1 { font-family: "Courier New",sans-serif;
+				text-decoration: none;
+				text-align: center;
+				font-size: 1.3em;
+				color: white;
+				background: blue;
+			 }
+-->
+</style>
+
+</head>
+
+<body>
+<h1>My Custom DTL Wizard</h1>
+<div class="Description">This wizard creates a new DTL class.  Specify the properties 
+of your new DTL in the form below and then press OK.</div>
+<hr>
+<form name="myForm" action="NewDTLFinal.csp">
+<table cellspacing="5" cellpadding="0">
+<tr><td class="Label">Package Name:</td><td><input type="text" name="PACKAGE" size="60" value="Hospital"></td></tr>
+<tr><td class="Label">Class Name:</td><td><input type="text" name="CLASSNAME" size="60" value="MyDTLName"></td></tr>
+
+</table>
+<hr>
+<input type="hidden" name="Language" value="cache">
+<div align="right">
+<input type="submit" value=" OK " name="submit">
+</div>
+</form>
+
+</body>
+</html>
+]]></CSP>
+
+
+<CSP name="CustomTemplates/NewDTLFinal.csp" application="/csp/ensemble/" default="1"><![CDATA[
+<csp:StudioGenerateTemplate>
+<script language="Cache" runat="server">
+ Set cls = $get(%request.Data("PACKAGE",1))_"."_$get(%request.Data("CLASSNAME",1))
+ 
+ Set %session.Data("Template","CLASS") = cls
+ Set language = $zcvt(%request.Get("Language"),"L")
+ Set isCache = $zcvt(language,"L") = "cache"
+
+ Write "/// ",cls,!
+ Write "Class ",cls," Extends Ens.DataTransform [ ProcedureBlock ]",!
+ Write "{",!!
+
+ Write "	/*",!
+ Write "	Date:  MM/DD/20YY",!
+ Write "	Author:  FirstName LastName",!
+ Write "	Version:  1.0",!!
+ Write "	Description:  Add description here...",!!
+ Write "	*/",!!
+ 
+ Write "ClassMethod Transform(source As EnsLib.HL7.Message,target As EnsLib.HL7.Message) As %Status",!
+ Write "{",!
+ 
+ Write "	TRY {",!
+ Write "		;;;;;;;;;;;;;;;;;;;;;;;;;;;;",!
+ Write "		;;Make sure there's a source message",!
+ Write "		;;;;;;;;;;;;;;;;;;;;;;;;;;;;",!
+ Write "		IF ('$IsObject(source)) {",!
+ Write "			SET sc = $System.Status.Error($$$GeneralError,"_$Char(34)_"No source object"_$Char(34)_")",!
+ Write "			QUIT",!
+ Write "		}",!!
+ Write "		SET sc = ..TransformMSH()",!
+ Write "	}",!! ;; close out TRY
+ 
+ Write "	CATCH (exception) {",!
+ Write "		SET sc = exception.AsStatus()",!
+ Write "		SET sc = target.SETValueAt(sc,"_$Char(34)_"MSH:3"_$Char(34)_") ;;;error documentation in MSH:3",!
+ Write "	}",! ;;close out CATCH
+ 
+ Write "}",!! ;; close out Method Transform
+ 
+ Write "ClassMethod TransformMSH() As %Status",!
+ Write "{",!
+ Write "	//Add some code here...",!!
+ Write "	QUIT sc",!
+ Write "}",!! ;; close out TransformMSH
+ Write "}",!
+
+</script>
+
+]]></CSP>
+</Export>

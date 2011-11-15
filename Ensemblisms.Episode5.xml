@@ -1,0 +1,671 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="24" zv="Cache for UNIX (Apple Mac OS X for x86-64) 2010.2 (Build 317U)" ts="2010-05-09 21:47:52">
+<Class name="Demo.DICOM.Process.Storage">
+<Super>EnsLib.DICOM.Process</Super>
+<TimeChanged>61855,78440.840093</TimeChanged>
+<TimeCreated>61102,65382.716582</TimeCreated>
+
+<Parameter name="SETTINGS">
+<Description>
+This parameter names the operation used to provide storage</Description>
+<Default>OperationDuplexName</Default>
+</Parameter>
+
+<Property name="OriginatingMessageID">
+<Description>
+This keeps track of the OriginatingMessageID</Description>
+<Type>%Integer</Type>
+</Property>
+
+<Property name="DocumentFromService">
+<Description>
+This is the incoming document from the business Sservice</Description>
+<Type>EnsLib.DICOM.Document</Type>
+</Property>
+
+<Property name="DocumentFromOperation">
+<Description>
+This is the outgoing document from the business operation</Description>
+<Type>EnsLib.DICOM.Document</Type>
+</Property>
+
+<Property name="CurrentState">
+<Description>
+This keeps track of the current state of the process</Description>
+<Type>%String</Type>
+<InitialExpression>"IDLE"</InitialExpression>
+</Property>
+
+<Property name="OperationDuplexName">
+<Description>
+This is the name of the operation providing storage</Description>
+</Property>
+
+<Method name="OnMessage">
+<FormalSpec>pSourceConfigName:%String,pInput:%Library.Persistent</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim tSC As %Status = $$$OK
+	#dim tMsgType As %String
+	do {
+		
+		If pInput.%Extends("EnsLib.DICOM.Document") {
+	 		
+	 		If pSourceConfigName=..OperationDuplexName {
+		 		
+		 		If ..CurrentState="RequestDocumentSent" {
+			
+					Set tMsgType=$$$MsgTyp2Str(pInput.GetValueAt("CommandSet.CommandField",.tSC))
+					If $$$ISERR(tSC) Quit
+					
+					#; Should only EVER get a C-STORE-RSP
+					$$$ASSERT(tMsgType="C-STORE-RSP")
+				
+					#; This is the reply to the request, store it
+					
+					//Set tSC=pDocOut.SetValueAt("80372376","DataSet.AccessionNumber") 
+					//If $$$ISERR(tSC) Quit
+					//Set tSC=pDocOut.SetValueAt("Patient"_$Random(100)_"^Name","DataSet.PatientName")
+					//If $$$ISERR(tSC) Quit
+					
+					//Set tModalityType= pInput.GetValueAt("DataSet.AccessionNumber")
+					//$$$LOGINFO(tModalityType)
+					
+					Set copy = pInput.%ConstructClone(1)
+					
+					Set tSC=copy.SetValueAt("1111111","DataSet.AccessionNumber") 
+					//$$$LOGINFO(tSC)
+					Set ..DocumentFromOperation=copy
+					
+				
+					#; Must release association, we should be called back at OnAssociationReleased()
+					Set tSC=..ReleaseAssociation(..OperationDuplexName)
+					If $$$ISERR(tSC) Quit
+					
+				} else {
+					
+					#; Shouldn't get here
+					$$$ASSERT(0)
+				}
+				
+	 		} else {
+	 				
+				#; Get the CommandField, it contains the type of request, it should ALWAYS be present
+				Set tMsgType=$$$MsgTyp2Str(pInput.GetValueAt("CommandSet.CommandField",.tSC))
+				If $$$ISERR(tSC) Quit
+			
+				If tMsgType="C-STORE-RQ" {
+					
+					
+					// ENSEMBLISMS - EPISODE 5
+					// Ron Sweeney, 05/2010
+					// Here looks like a good place to Hack
+					Set copy = pInput.%ConstructClone(1)
+					
+					
+					
+					//DICOM Coercion, Change a value in the Header
+					Set tSC=copy.SetValueAt("2222222","DataSet.AccessionNumber") 
+					$$$LOGINFO(tSC)
+					Set tSC=copy.SetValueAt("Ron Sweeney","DataSet.PatientName") 
+					$$$LOGINFO(tSC)
+					//DICOM Coercion
+					
+					
+					
+					
+					//Grab some values, Here we can database patient dosing information
+					
+					Set tModalityType= copy.GetValueAt("DataSet.AccessionNumber")
+					$$$LOGINFO(tModalityType)
+					
+					Set vName= copy.GetValueAt("DataSet.PatientName")
+					Set vAccession= copy.GetValueAt("DataSet.AccessionNumber")
+					Set vKVP = copy.GetValueAt("DataSet.KVP")
+					Set vCurrent = copy.GetValueAt("DataSet.XRayTubeCurrent")
+					Set vExposure = copy.GetValueAt("DataSet.Exposure")
+					
+					$$$LOGINFO(vName_vAccession_vKVP_vCurrent_vExposure)
+					
+					Set dicomrow = ##class(Ensemblisms.Episode5.DICOM.DosingClass).%New()
+					Set dicomrow.Accession = vAccession
+					Set dicomrow.AName = vName
+					Set dicomrow.Voltage = vKVP
+					Set dicomrow.Current = vCurrent
+					Set dicomrow.Exposure = vExposure
+					
+					Set sc = dicomrow.%Save()
+					
+					//End Database some Tag values, patient dosing information
+					
+					
+					
+					
+					
+					#; The incoming document is the source document
+					Set ..DocumentFromService=copy
+					
+					#; If the Source is the TCP DUPLEX service it will want a reply so record the message ID for
+					#; use later. The File service doesn't require this value and the document will not
+					#; even have the CommandSet.MessageID field set as the CommandSet of a DICOM Document is only created when 
+					#; the transport is via TCP
+					If ..ServiceDuplexName'="" {
+						
+						#; Record the origination message id
+						Set ..OriginatingMessageID=..DocumentFromService.GetValueAt("CommandSet.MessageID",.tSC)
+						If $$$ISERR(tSC) $$$LOGSTATUS(tSC) Quit
+					}
+		
+					#; Start a private session with the operation
+					Set tSC=..EstablishPrivateSession(..OperationDuplexName)
+					
+					#; We have sent a request to establish a private session. If all goes well we will
+					#; be called back at OnPrivateSessionEstablished()
+					Set ..CurrentState="EstablishPrivateSessionRequestSent"
+					
+				} else {
+					Set tSC=$$$ERROR($$$EnsDICOMUnexpectedMessage,tMsgType)
+				}
+	 		} 
+ 		} else {
+	 		
+	 		#; Not expecting any other type of message
+	 		$$$ASSERT(0)
+ 		}
+ 		
+	} while (0)
+	
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="OnError">
+<Description>
+This method is called when any error occurs. Returning the same error will cause the BusinessProcess to set its
+status to error and close down</Description>
+<FormalSpec><![CDATA[request:%Library.Persistent,&response:%Library.Persistent,callrequest:%Library.Persistent,pErrorStatus:%Status,pCompletionKey:%String]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#; If we are in conversation with the service we need to tell the service to ABORT its association
+	If ..IsInPrivateSession(..ServiceDuplexName) {
+		Set tProviderAbort=##class(EnsLib.DICOM.Command.Abort).%New($$$ABORTSOURCESERVICEPROVIDER,$$$ABORTREASONNOTSPECIFIED)
+		Do ..SendRequestAsync(..ServiceDuplexName,tProviderAbort,0)
+	}
+	
+	#; If we are in conversation with the operation, we neet to tell the operation to ABORT its association
+	If ..IsInPrivateSession(..OperationDuplexName) {
+		Set tUserAbort=##class(EnsLib.DICOM.Command.Abort).%New($$$ABORTSOURCESERVICEUSER,$$$ABORTREASONNOTSPECIFIED)
+		Do ..SendRequestAsync(..OperationDuplexName,tUserAbort,0)
+	}
+	
+	#; Stop all private sessions, we are coming down hard
+	Do ..StopAllPrivateSessions()
+	
+	Quit pErrorStatus
+]]></Implementation>
+</Method>
+
+<Method name="OnPrivateSessionEstablished">
+<Description>
+This call back is called by the framework when a private sesssion is established</Description>
+<FormalSpec>pSourceConfigName:%String,pInput:EnsLib.DICOM.Notify.Established</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim tSC As %Status = $$$OK
+	
+	#; Only interested in private session being established with the operation
+	If pSourceConfigName=..OperationDuplexName {
+		
+		$$$ASSERT(..CurrentState="EstablishPrivateSessionRequestSent")
+		
+		#; Association must be established
+		Set tSC=..EstablishAssociation(..OperationDuplexName)
+		If $$$ISERR(tSC) Quit
+		
+		#; We have sent a request to establish an association. If all goes well we will
+		#; be called back at OnAssociationEstablished()
+		Set ..CurrentState="EstablishAssociationRequestSent"
+	}
+	
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="OnAssociationEstablished">
+<Description>
+This method is called by the framework on successful establishment of an association</Description>
+<FormalSpec>pSourceConfigName:%String,pInput:EnsLib.DICOM.Notify.Established</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim tSC As %Status = $$$OK
+	
+	#; Only interested in Association being established with the operation
+	If pSourceConfigName=..OperationDuplexName {
+		
+		$$$ASSERT(..CurrentState="EstablishAssociationRequestSent")
+		
+		#; Forward the document to the operation
+		Set tSC=..SendRequestAsync(..OperationDuplexName,..DocumentFromService,0) 
+		If $$$ISERR(tSC) Quit tSC
+	
+		#; State becomes RequestDocumentSent, we are expecting to be called back with a ReplyDocument
+		Set ..CurrentState="RequestDocumentSent"
+	}
+	
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="OnAssociationReleased">
+<FormalSpec>pSourceConfigName:%String,pInput:EnsLib.DICOM.Notify.Released</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim tSC As %Status = $$$OK
+	
+	#; Only interested in Association being released from the operation
+	If pSourceConfigName=..OperationDuplexName {
+			
+		#; If the service expects a reply (The TCP service does, the File service does not)
+		If ..IsInPrivateSession(..ServiceDuplexName) {
+			
+			#; Update the message id being responded to
+			Set tSC=..DocumentFromOperation.SetValueAt(..OriginatingMessageID,"CommandSet.MessageIDBeingRespondedTo") 
+			$$$ASSERT('$$$ISERR(tSC))
+		
+			#; Send the reply back to the service
+			Set tSC=..SendRequestAsync(..ServiceDuplexName,..DocumentFromOperation,0) 
+			If $$$ISERR(tSC) Quit tSC
+		}
+	
+		#; Received a release acknowledgement, State becomes "IDLE"
+		Set ..CurrentState="IDLE",..DocumentFromService="",..DocumentFromOperation=""
+		
+		#; Stop the private session with the Operation
+		Set tSC=..StopPrivateSession(..OperationDuplexName) 
+		If $$$ISERR(tSC) Quit tSC
+		
+		#; Stop the private session with the Service	
+		If ..ServiceDuplexName'="" {
+			Set tSC=..StopPrivateSession(..ServiceDuplexName) 
+			If $$$ISERR(tSC) Quit tSC
+		}
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="OnAssociationRejected">
+<Description>
+This callback is called by the framework when an Association is rejected</Description>
+<Final>1</Final>
+<FormalSpec>pSourceConfigName:%String,pInput:EnsLib.DICOM.Notify.Rejected</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim tSC,tStatus As %Status = $$$OK
+	
+	try {
+		
+		#; Only interested in Association being released from the operation
+		If pSourceConfigName=..OperationDuplexName {
+		
+			#; Form an error message
+			Set tStatus=$$$EnsError($$$EnsDICOMPeerRejectedAssociation)
+	
+			If ..IsInPrivateSession(..ServiceDuplexName) {
+				Set tSC=..SendRequestAsync(..ServiceDuplexName,##class(EnsLib.DICOM.Notify.Errored).%New(tStatus),0) 
+				If $$$ISERR(tSC) Quit
+			}
+
+			Set ..CurrentState="ERROR"
+	
+			Set tSC=..StopAllPrivateSessions()
+		}
+	
+	} catch {
+		Set tSC=$$$EnsSystemError
+	}
+	
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="OnAssociationErrored">
+<Description>
+This callback is called by the framework when an assocation encounters an error</Description>
+<Final>1</Final>
+<FormalSpec>pSourceConfigName:%String,pInput:EnsLib.DICOM.Notify.Errored</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim tSC As %Status = $$$OK
+	
+	#; Forward the message to the corresponding config item
+	If ..CurrentState'="IDLE" {
+		
+		If pSourceConfigName=..ServiceDuplexName {
+			If ..IsInPrivateSession(..OperationDuplexName) {
+				Do ..SendRequestAsync(..OperationDuplexName,pInput,0)
+			}
+		} else {
+			If ..IsInPrivateSession(..ServiceDuplexName) {
+				Do ..SendRequestAsync(..ServiceDuplexName,pInput,0)
+			}
+			
+			If ..CurrentState="RequestDocumentSent" {
+				
+				#; Must release association, we should be called back at OnAssociationReleased()
+				Set tSC=..ReleaseAssociation(..OperationDuplexName)
+				If $$$ISERR(tSC) Quit
+			}
+		}
+	}
+	Quit ..StopAllPrivateSessions()
+]]></Implementation>
+</Method>
+
+<Method name="OnAssociationAborted">
+<Description>
+This callback is called by the framework when an association is aborted</Description>
+<Final>1</Final>
+<FormalSpec>pSourceConfigName:%String,pInput:EnsLib.DICOM.Notify.Aborted</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#; Forward the message to the corresponding config item
+	If ..CurrentState'="IDLE" {
+		
+		If pSourceConfigName=..ServiceDuplexName {
+			If ..IsInPrivateSession(..OperationDuplexName) {
+				Do ..SendRequestAsync(..OperationDuplexName,pInput,0)
+			}
+		} else {
+			If ..IsInPrivateSession(..ServiceDuplexName) {
+				Do ..SendRequestAsync(..ServiceDuplexName,pInput,0)
+			}
+		}
+	}
+	
+	Quit ..StopAllPrivateSessions()
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>StorageDefaultData</DefaultData>
+<Data name="StorageDefaultData">
+<Structure>listnode</Structure>
+<Subscript>"Storage"</Subscript>
+<Value name="1">
+<Value>OriginatingMessageID</Value>
+</Value>
+<Value name="2">
+<Value>DocumentFromService</Value>
+</Value>
+<Value name="3">
+<Value>DocumentFromOperation</Value>
+</Value>
+<Value name="4">
+<Value>CurrentState</Value>
+</Value>
+<Value name="5">
+<Value>OperationDuplexName</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ensemblisms.Episode5.DICOM.DosingClass">
+<Super>%Persistent,%XML.Adaptor,%ZEN.DataModel.Adaptor</Super>
+<TimeChanged>61855,62816.356329</TimeChanged>
+<TimeCreated>61667,33616.685644</TimeCreated>
+<Inheritance>right</Inheritance>
+
+<Property name="AName">
+<Type>%String</Type>
+</Property>
+
+<Property name="Voltage">
+<Type>%String</Type>
+</Property>
+
+<Property name="Exposure">
+<Type>%String</Type>
+</Property>
+
+<Property name="Current">
+<Type>%String</Type>
+</Property>
+
+<Property name="Accession">
+<Type>%String</Type>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^Ensemblisms.Ep2F6A.DosingClassD</DataLocation>
+<DefaultData>DosingClassDefaultData</DefaultData>
+<IdLocation>^Ensemblisms.Ep2F6A.DosingClassD</IdLocation>
+<IndexLocation>^Ensemblisms.Ep2F6A.DosingClassI</IndexLocation>
+<StreamLocation>^Ensemblisms.Ep2F6A.DosingClassS</StreamLocation>
+<Data name="DosingClassDefaultData">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Name</Value>
+</Value>
+<Value name="3">
+<Value>Voltage</Value>
+</Value>
+<Value name="4">
+<Value>XRayTubeCurrent</Value>
+</Value>
+<Value name="5">
+<Value>Exposure</Value>
+</Value>
+<Value name="6">
+<Value>Accession</Value>
+</Value>
+<Value name="7">
+<Value>aName</Value>
+</Value>
+<Value name="8">
+<Value>AName</Value>
+</Value>
+<Value name="9">
+<Value>Current</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ensemblisms.Episode5.DICOM.DosingPage">
+<Super>%ZEN.Component.page,%ZEN.DataModel.Adaptor</Super>
+<TimeChanged>61855,61760.628023</TimeChanged>
+<TimeCreated>61440,40354.643354</TimeCreated>
+<Inheritance>right</Inheritance>
+
+<Parameter name="PAGENAME">
+<Default>Dosing Page</Default>
+</Parameter>
+
+<Parameter name="DOMAIN">
+<Description>
+Domain used for localization.</Description>
+</Parameter>
+
+<XData name="Style">
+<Description>
+This Style block contains page-specific CSS style definitions.</Description>
+<Data><![CDATA[
+<style type="text/css">
+/* style for title bar */
+#title2 {
+	background: blue;
+	color: white;
+	font-family: Verdana;
+	font-size: 1.0em;
+	font-weight: bold;
+	padding: 5px;
+	border-bottom: 1px solid black;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	text-align: center;
+	
+}
+</style>
+]]></Data>
+</XData>
+
+<XData name="Contents">
+<Description>
+This XML block defines the contents of this page.</Description>
+<XMLNamespace>http://www.intersystems.com/zen</XMLNamespace>
+<Data><![CDATA[
+<page xmlns="http://www.intersystems.com/zen" title="Dosing Database">
+
+<!-- Set up the data control for the page -->
+
+
+<dataController id="PavEntityData" modelClass="Ensemblisms.Episode5.DICOM.DosingClass" />
+
+<vgroup width="100%">
+<image align="left" src="http://www.ensemblisms.com/images/e.png"/>
+<html id="title2">Dosing Database</html>
+</vgroup>
+<spacer width="40"/>
+<vgroup align="center" width="55%">
+<!-- Put a tableNavigator and tablePane here -->
+<tableNavigator id="PavEntityNav" tablePaneId="PavEntityTablePane" />
+<tablePane id="PavEntityTablePane" 
+useSnapshot="true"
+sql="SELECT * FROM Ensemblisms_Episode5_DICOM.DosingClass"
+showZebra="true"
+pageSize="10"
+maxRows="1000"
+onselectrow="zenPage.populateForm(zenThis);"
+
+/>
+
+<!-- Create the dynaform and related buttons -->
+<dynaForm id="PavEntityForm" controllerId="PavEntityData" />
+
+<hgroup>
+<button id="updateButton" caption="Update" onclick="zenPage.updateMapping();" />
+<spacer width="10"/>
+<button id="newButton" caption="New" onclick="zenPage.createNewMapping();" />
+<spacer width="10"/>
+<button id="deleteButton" caption="Delete" onclick="zenPage.deleteMapping();" />
+</hgroup>
+
+</vgroup>
+</page>
+]]></Data>
+</XData>
+
+<Method name="populateForm">
+<Description>
+Populate the form with data from the
+selected row</Description>
+<FormalSpec>tablePane</FormalSpec>
+<Language>javascript</Language>
+<ClientMethod>1</ClientMethod>
+<Implementation><![CDATA[
+	try {
+		// Set the modelID for the mdcontroller to the selected
+		// row ID
+		var controller = zenPage.getComponentById('PavEntityData');
+		var selection = tablePane.getProperty('selectedIndex')
+		
+		// Get the ID for the selection and then set the model ID
+		if (selection >= 0) {
+			var rowData = tablePane.getRowData(selection);
+			controller.setModelId(rowData.ID);
+		}
+		else {
+			controller.createNewObject();
+		}
+	}
+	catch (ex) {
+		zenExceptionHandler(ex,arguments);
+	}
+]]></Implementation>
+</Method>
+
+<Method name="updateMapping">
+<Description>
+Update currently selected data</Description>
+<Language>javascript</Language>
+<ClientMethod>1</ClientMethod>
+<Implementation><![CDATA[
+	try {
+		var PavEntityPane = zenPage.getComponentById('PavEntityTablePane');
+		var selection = PavEntityPane.getProperty('selectedIndex');
+
+		var form = zenPage.getComponentById('PavEntityForm');
+		form.save();
+			
+		// Refresh the table
+		PavEntityPane.executeQuery(true);
+			
+		// Select the table row again
+		PavEntityPane.setProperty('selectedIndex', selection);
+	}
+	catch (ex) {
+		zenExceptionHandler(ex,arguments);
+	}
+
+	// Return a value to ensure methods are executed synchronously
+	return 1
+]]></Implementation>
+</Method>
+
+<Method name="createNewMapping">
+<Description>
+Create a new data mapping</Description>
+<Language>javascript</Language>
+<ClientMethod>1</ClientMethod>
+<Implementation><![CDATA[
+	try {
+		// When the selection is cleared, a new object is
+		// created by the controller (see populateForm()).
+		var PavEntityPane = zenPage.getComponentById('PavEntityTablePane');
+		PavEntityPane.setProperty('selectedIndex', -1);
+		zenPage.populateForm(zenThis);
+	}
+	catch (ex) {
+		zenExceptionHandler(ex,arguments);
+	}
+	
+	// Return a value to ensure methods are executed synchronously
+	return 1
+]]></Implementation>
+</Method>
+
+<Method name="deleteMapping">
+<Description>
+Delete selection from database</Description>
+<Language>javascript</Language>
+<ClientMethod>1</ClientMethod>
+<Implementation><![CDATA[
+	try {
+		// Delete the data
+		var controller = zenPage.getComponentById('PavEntityData');
+		controller.deleteId(controller.getModelId());
+
+		// Re-execute query which clears the selection and will create a new object
+		var PavEntityPane = zenPage.getComponentById('PavEntityTablePane');
+		PavEntityPane.executeQuery();
+	}
+	catch (ex) {
+		zenExceptionHandler(ex,arguments);
+	}
+
+	// Return a value to ensure methods are executed synchronously
+	return 1
+]]></Implementation>
+</Method>
+</Class>
+</Export>

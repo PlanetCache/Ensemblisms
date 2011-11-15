@@ -1,0 +1,572 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="22" zv="Cache for Windows (x86-32) 2008.2 (Build 526U)" ts="2009-04-19 18:07:57">
+<Class name="Ensemblisms.Episode1.Episode1">
+<Super>Ens.Production</Super>
+<TimeChanged>61458,77964.86448</TimeChanged>
+<TimeCreated>61441,75672.781559</TimeCreated>
+
+<XData name="ProductionDefinition">
+<Data><![CDATA[
+<Production Name="Ensemblisms.Episode1.Episode1" TestingEnabled="true" LogGeneralTraceEvents="false">
+  <Description>Simple Web Service to control a Production Item.</Description>
+  <ActorPoolSize>2</ActorPoolSize>
+  <Setting Target="Production" Name="ShutdownTimeout">120</Setting>
+  <Setting Target="Production" Name="UpdateTimeout">10</Setting>
+  <Item Name="MsgRouter" Category="" ClassName="EnsLib.HL7.MsgRouter.RoutingEngine" PoolSize="0" Enabled="true" Foreground="false" InactivityTimeout="0" Comment="This handles message routing logic." LogTraceEvents="false" Schedule="">
+    <Setting Target="Host" Name="BusinessRuleName">Ensemblisms.RoutingRule</Setting>
+  </Item>
+  <Item Name="Ens.Alert" Category="" ClassName="EnsLib.MsgRouter.RoutingEngine" PoolSize="0" Enabled="true" Foreground="false" InactivityTimeout="0" Comment="This handles Alert routing logic." LogTraceEvents="false" Schedule="">
+    <Setting Target="Host" Name="BusinessRuleName">Ensemblisms.AlertRule</Setting>
+  </Item>
+  <Item Name="EMailAlert" Category="" ClassName="EnsLib.EMail.AlertOperation" PoolSize="1" Enabled="false" Foreground="false" InactivityTimeout="0" Comment="This sends alerts via e-mail." LogTraceEvents="false" Schedule="">
+  </Item>
+  <Item Name="PagerAlert" Category="" ClassName="EnsLib.EMail.AlertOperation" PoolSize="1" Enabled="false" Foreground="false" InactivityTimeout="0" Comment="This sends alerts to a pager via e-mail." LogTraceEvents="false" Schedule="">
+  </Item>
+  <Item Name="BadMessageHandler" Category="" ClassName="EnsLib.HL7.Operation.FileOperation" PoolSize="1" Enabled="false" Foreground="false" InactivityTimeout="0" Comment="Bad messages are sent to this operation." LogTraceEvents="false" Schedule="">
+  </Item>
+  <Item Name="HL7FileService" Category="" ClassName="EnsLib.HL7.Service.FileService" PoolSize="1" Enabled="false" Foreground="false" InactivityTimeout="0" Comment="This is a default HL7 File Service." LogTraceEvents="false" Schedule="">
+    <Setting Target="Host" Name="TargetConfigNames">MsgRouter</Setting>
+  </Item>
+  <Item Name="HL7FileOperation" Category="" ClassName="EnsLib.HL7.Operation.FileOperation" PoolSize="1" Enabled="true" Foreground="false" InactivityTimeout="0" Comment="This is a default HL7 File Operation." LogTraceEvents="true" Schedule="">
+    <Setting Target="Host" Name="Filename">hl7.txt</Setting>
+    <Setting Target="Host" Name="AutoBatchParentSegs">0</Setting>
+    <Setting Target="Host" Name="Separators"><![CDATA[|^~\&]]]]><![CDATA[></Setting>
+    <Setting Target="Host" Name="SearchTableClass"></Setting>
+    <Setting Target="Host" Name="DefCharEncoding">Latin1</Setting>
+    <Setting Target="Host" Name="AlertRetryGracePeriod">0</Setting>
+    <Setting Target="Host" Name="RetryInterval">5</Setting>
+    <Setting Target="Host" Name="FailureTimeout">-1</Setting>
+    <Setting Target="Host" Name="AlertOnError">0</Setting>
+    <Setting Target="Host" Name="ArchiveIO">0</Setting>
+    <Setting Target="Host" Name="Framing">AsciiLF</Setting>
+    <Setting Target="Adapter" Name="FilePath">e:\</Setting>
+    <Setting Target="Adapter" Name="Overwrite">0</Setting>
+    <Setting Target="Adapter" Name="Charset">Default</Setting>
+    <Setting Target="Adapter" Name="OpenTimeout">5</Setting>
+  </Item>
+  <Item Name="EnsemblismsEpisode1TCP" Category="" ClassName="EnsLib.HL7.Service.TCPService" PoolSize="1" Enabled="true" Foreground="false" InactivityTimeout="0" Comment="" LogTraceEvents="true" Schedule="">
+    <Setting Target="Host" Name="TargetConfigNames">MsgRouter</Setting>
+    <Setting Target="Host" Name="SearchTableClass">EnsLib.HL7.SearchTable</Setting>
+    <Setting Target="Host" Name="LocalFacilityApplication">ISC:EnsembleHL7</Setting>
+    <Setting Target="Host" Name="Framing">MLLP</Setting>
+    <Setting Target="Host" Name="AckMode">Immed</Setting>
+    <Setting Target="Host" Name="UseAckCommitCodes">0</Setting>
+    <Setting Target="Host" Name="IgnoreInboundAck">1</Setting>
+    <Setting Target="Host" Name="AddNackERR">0</Setting>
+    <Setting Target="Host" Name="BatchHandling">1Session</Setting>
+    <Setting Target="Host" Name="MessageSchemaCategory"></Setting>
+    <Setting Target="Host" Name="DefCharEncoding">Latin1</Setting>
+    <Setting Target="Host" Name="AlertGracePeriod">0</Setting>
+    <Setting Target="Host" Name="AlertOnError">0</Setting>
+    <Setting Target="Host" Name="ArchiveIO">0</Setting>
+    <Setting Target="Adapter" Name="JobPerConnection">0</Setting>
+    <Setting Target="Adapter" Name="AllowedIPAddresses"></Setting>
+    <Setting Target="Adapter" Name="QSize">100</Setting>
+    <Setting Target="Adapter" Name="CallInterval">5</Setting>
+    <Setting Target="Adapter" Name="Port">5555</Setting>
+    <Setting Target="Adapter" Name="StayConnected">1</Setting>
+    <Setting Target="Adapter" Name="ReadTimeout">5</Setting>
+    <Setting Target="Adapter" Name="SSLConfig"></Setting>
+  </Item>
+</Production>
+]]></Data>
+</XData>
+</Class>
+
+
+<Class name="Ensemblisms.Episode1.ItemStatus.DisableInterface">
+<Description>
+This class is generated by the Ensemblisms.Episode1.ItemStatus Web Service class.
+This class should not be edited or modified in any way.</Description>
+<Import>Ensemblisms.Episode1</Import>
+<IncludeCode>%occInclude,%soap</IncludeCode>
+<ProcedureBlock>0</ProcedureBlock>
+<Super>%SOAP.MsgDescriptor</Super>
+<TimeChanged>61470,30640.0967</TimeChanged>
+<TimeCreated>61470,30640.076166</TimeCreated>
+<GeneratedBy>Ensemblisms.Episode1.ItemStatus.CLS</GeneratedBy>
+
+<Parameter name="NAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="SOAPBINDINGSTYLE">
+<Default>document</Default>
+</Parameter>
+
+<Parameter name="SOAPBODYUSE">
+<Default>literal</Default>
+</Parameter>
+
+<Parameter name="SUPPRESSDOCUMENTATION">
+<Default>1</Default>
+</Parameter>
+
+<Parameter name="TYPENAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="XMLDEFAULTREFERENCE">
+<Default>complete</Default>
+</Parameter>
+
+<Parameter name="XMLIMPORTNAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="XMLRESULTNAME">
+<Default>%Result</Default>
+</Parameter>
+
+<Property name="%Result">
+<Type>%Library.String</Type>
+<Parameter name="MAXLEN"/>
+<Parameter name="XMLIO" value="OUT"/>
+<Parameter name="XMLNAME" value="DisableInterfaceResult"/>
+</Property>
+
+<Property name="ItemName">
+<Type>%Library.String</Type>
+<Parameter name="MAXLEN"/>
+<Parameter name="XMLIO" value="IN"/>
+</Property>
+</Class>
+
+
+<Class name="Ensemblisms.Episode1.ItemStatus.EnableInterface">
+<Description>
+This class is generated by the Ensemblisms.Episode1.ItemStatus Web Service class.
+This class should not be edited or modified in any way.</Description>
+<Import>Ensemblisms.Episode1</Import>
+<IncludeCode>%occInclude,%soap</IncludeCode>
+<ProcedureBlock>0</ProcedureBlock>
+<Super>%SOAP.MsgDescriptor</Super>
+<TimeChanged>61470,30640.113087</TimeChanged>
+<TimeCreated>61470,30640.097435</TimeCreated>
+<GeneratedBy>Ensemblisms.Episode1.ItemStatus.CLS</GeneratedBy>
+
+<Parameter name="NAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="SOAPBINDINGSTYLE">
+<Default>document</Default>
+</Parameter>
+
+<Parameter name="SOAPBODYUSE">
+<Default>literal</Default>
+</Parameter>
+
+<Parameter name="SUPPRESSDOCUMENTATION">
+<Default>1</Default>
+</Parameter>
+
+<Parameter name="TYPENAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="XMLDEFAULTREFERENCE">
+<Default>complete</Default>
+</Parameter>
+
+<Parameter name="XMLIMPORTNAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="XMLRESULTNAME">
+<Default>%Result</Default>
+</Parameter>
+
+<Property name="%Result">
+<Type>%Library.String</Type>
+<Parameter name="MAXLEN"/>
+<Parameter name="XMLIO" value="OUT"/>
+<Parameter name="XMLNAME" value="EnableInterfaceResult"/>
+</Property>
+
+<Property name="ItemName">
+<Type>%Library.String</Type>
+<Parameter name="MAXLEN"/>
+<Parameter name="XMLIO" value="IN"/>
+</Property>
+</Class>
+
+
+<Class name="Ensemblisms.Episode1.ItemStatus.GetMessageById">
+<Description>
+This class is generated by the Ensemblisms.Episode1.ItemStatus Web Service class.
+This class should not be edited or modified in any way.</Description>
+<Import>Ensemblisms.Episode1</Import>
+<IncludeCode>%occInclude,%soap</IncludeCode>
+<ProcedureBlock>0</ProcedureBlock>
+<Super>%SOAP.MsgDescriptor</Super>
+<TimeChanged>61470,30640.147337</TimeChanged>
+<TimeCreated>61470,30640.11394</TimeCreated>
+<GeneratedBy>Ensemblisms.Episode1.ItemStatus.CLS</GeneratedBy>
+
+<Parameter name="NAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="SOAPBINDINGSTYLE">
+<Default>document</Default>
+</Parameter>
+
+<Parameter name="SOAPBODYUSE">
+<Default>literal</Default>
+</Parameter>
+
+<Parameter name="SUPPRESSDOCUMENTATION">
+<Default>1</Default>
+</Parameter>
+
+<Parameter name="TYPENAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="XMLDEFAULTREFERENCE">
+<Default>complete</Default>
+</Parameter>
+
+<Parameter name="XMLIMPORTNAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="XMLRESULTNAME">
+<Default>%Result</Default>
+</Parameter>
+
+<Property name="%Result">
+<Type>%Library.String</Type>
+<Parameter name="MAXLEN"/>
+<Parameter name="XMLIO" value="OUT"/>
+<Parameter name="XMLNAME" value="GetMessageByIdResult"/>
+</Property>
+
+<Property name="Message">
+<Type>%Library.String</Type>
+<Parameter name="MAXLEN"/>
+<Parameter name="XMLIO" value="IN"/>
+</Property>
+</Class>
+
+
+<Class name="Ensemblisms.Episode1.ItemStatus.InterfaceState">
+<Description>
+This class is generated by the Ensemblisms.Episode1.ItemStatus Web Service class.
+This class should not be edited or modified in any way.</Description>
+<Import>Ensemblisms.Episode1</Import>
+<IncludeCode>%occInclude,%soap</IncludeCode>
+<ProcedureBlock>0</ProcedureBlock>
+<Super>%SOAP.MsgDescriptor</Super>
+<TimeChanged>61470,30640.154999</TimeChanged>
+<TimeCreated>61470,30640.14842</TimeCreated>
+<GeneratedBy>Ensemblisms.Episode1.ItemStatus.CLS</GeneratedBy>
+
+<Parameter name="NAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="SOAPBINDINGSTYLE">
+<Default>document</Default>
+</Parameter>
+
+<Parameter name="SOAPBODYUSE">
+<Default>literal</Default>
+</Parameter>
+
+<Parameter name="SUPPRESSDOCUMENTATION">
+<Default>1</Default>
+</Parameter>
+
+<Parameter name="TYPENAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="XMLDEFAULTREFERENCE">
+<Default>complete</Default>
+</Parameter>
+
+<Parameter name="XMLIMPORTNAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="XMLRESULTNAME">
+<Default>%Result</Default>
+</Parameter>
+
+<Property name="%Result">
+<Type>%Library.String</Type>
+<Parameter name="MAXLEN"/>
+<Parameter name="XMLIO" value="OUT"/>
+<Parameter name="XMLNAME" value="InterfaceStateResult"/>
+</Property>
+
+<Property name="ItemName">
+<Type>%Library.String</Type>
+<Parameter name="MAXLEN"/>
+<Parameter name="XMLIO" value="IN"/>
+</Property>
+</Class>
+
+
+<Class name="Ensemblisms.Episode1.ItemStatus.OnRecordsPassed">
+<Description>
+This class is generated by the Ensemblisms.Episode1.ItemStatus Web Service class.
+This class should not be edited or modified in any way.</Description>
+<Import>Ensemblisms.Episode1</Import>
+<IncludeCode>%occInclude,%soap</IncludeCode>
+<ProcedureBlock>0</ProcedureBlock>
+<Super>%SOAP.MsgDescriptor</Super>
+<TimeChanged>61470,30640.163222</TimeChanged>
+<TimeCreated>61470,30640.155723</TimeCreated>
+<GeneratedBy>Ensemblisms.Episode1.ItemStatus.CLS</GeneratedBy>
+
+<Parameter name="NAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="SOAPBINDINGSTYLE">
+<Default>document</Default>
+</Parameter>
+
+<Parameter name="SOAPBODYUSE">
+<Default>literal</Default>
+</Parameter>
+
+<Parameter name="SUPPRESSDOCUMENTATION">
+<Default>1</Default>
+</Parameter>
+
+<Parameter name="TYPENAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="XMLDEFAULTREFERENCE">
+<Default>complete</Default>
+</Parameter>
+
+<Parameter name="XMLIMPORTNAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="XMLRESULTNAME">
+<Default>%Result</Default>
+</Parameter>
+
+<Property name="%Result">
+<Type>%Library.String</Type>
+<Parameter name="MAXLEN"/>
+<Parameter name="XMLIO" value="OUT"/>
+<Parameter name="XMLNAME" value="OnRecordsPassedResult"/>
+</Property>
+
+<Property name="Source">
+<Type>%Library.String</Type>
+<Parameter name="MAXLEN"/>
+<Parameter name="XMLIO" value="IN"/>
+</Property>
+</Class>
+
+
+<Class name="Ensemblisms.Episode1.ItemStatus.Test">
+<Description>
+This class is generated by the Ensemblisms.Episode1.ItemStatus Web Service class.
+This class should not be edited or modified in any way.</Description>
+<Import>Ensemblisms.Episode1</Import>
+<IncludeCode>%occInclude,%soap</IncludeCode>
+<ProcedureBlock>0</ProcedureBlock>
+<Super>%SOAP.MsgDescriptor</Super>
+<TimeChanged>61470,30640.169208</TimeChanged>
+<TimeCreated>61470,30640.164019</TimeCreated>
+<GeneratedBy>Ensemblisms.Episode1.ItemStatus.CLS</GeneratedBy>
+
+<Parameter name="NAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="SOAPBINDINGSTYLE">
+<Default>document</Default>
+</Parameter>
+
+<Parameter name="SOAPBODYUSE">
+<Default>literal</Default>
+</Parameter>
+
+<Parameter name="SUPPRESSDOCUMENTATION">
+<Default>1</Default>
+</Parameter>
+
+<Parameter name="TYPENAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="XMLDEFAULTREFERENCE">
+<Default>complete</Default>
+</Parameter>
+
+<Parameter name="XMLIMPORTNAMESPACE">
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="XMLRESULTNAME">
+<Default>%Result</Default>
+</Parameter>
+
+<Property name="%Result">
+<Type>%Library.String</Type>
+<Parameter name="MAXLEN"/>
+<Parameter name="XMLIO" value="OUT"/>
+<Parameter name="XMLNAME" value="TestResult"/>
+</Property>
+</Class>
+
+
+<Class name="Ensemblisms.Episode1.ItemStatus">
+<Description>
+Ensemblisms.ItemStatus</Description>
+<IncludeCode>Ensemble</IncludeCode>
+<ProcedureBlock>1</ProcedureBlock>
+<Super>%SOAP.WebService</Super>
+<TimeChanged>61458,78625.732529</TimeChanged>
+<TimeCreated>61446,61777.928031</TimeCreated>
+
+<Parameter name="SERVICENAME">
+<Description>
+Name of the WebService.</Description>
+<Default>GetStatus</Default>
+</Parameter>
+
+<Parameter name="NAMESPACE">
+<Description>
+TODO: change this to actual SOAP namespace.
+SOAP Namespace for the WebService</Description>
+<Default>http://ensemblisms.com</Default>
+</Parameter>
+
+<Parameter name="USECLASSNAMESPACES">
+<Description>
+Namespaces of referenced classes will be used in the WSDL.</Description>
+<Default>1</Default>
+</Parameter>
+
+<Method name="Test">
+<Description>
+TODO: add arguments and implementation.
+Test</Description>
+<ReturnType>%String</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[	Quit "Episode 1"
+]]></Implementation>
+</Method>
+
+<Method name="EnableInterface">
+<FormalSpec>ItemName:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+	
+	s arr(ItemName,"Item","Enabled")=1
+	s y = ##class(Ens.Production).ApplySettings("Ensemblisms.Episode1.Episode1",.arr)
+	
+	if (y = 1) {
+	
+		set sc = "Successfully Enabled..."_ ItemName
+		
+	}
+	
+	else {
+		
+		set sc = "Something went wrong..."	
+		
+	}
+	
+	Quit sc
+]]></Implementation>
+</Method>
+
+<Method name="DisableInterface">
+<FormalSpec>ItemName:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+	
+	s arr(ItemName,"Item","Enabled")=0
+	s y = ##class(Ens.Production).ApplySettings("Ensemblisms.Episode1.Episode1",.arr)
+	
+	if (y = 1) {
+	
+		set sc = "Successfully Disabled..." _ ItemName
+		
+	}
+	
+	else {
+		
+		set sc = "Something went wrong..."	
+		
+	}
+	
+	Quit sc
+]]></Implementation>
+</Method>
+
+<Method name="GetIDFromName">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>ItemName:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+
+	&sql(SELECT ID into :identifier
+	FROM Ens_Config.Item
+	WHERE Name=:ItemName)
+	
+	Quit identifier
+]]></Implementation>
+</Method>
+
+<Method name="InterfaceState">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>ItemName:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+	  
+	  
+	  Set Id = ..GetIDFromName(ItemName)
+      set int = ##class(Ens.Config.Item).%OpenId(Id)
+     
+      Quit int.Enabled
+]]></Implementation>
+</Method>
+
+<Method name="OnRecordsPassed">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>Source:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+	
+	&sql(SELECT COUNT(*) into :count 
+	FROM Ens.MessageHeader 
+	WHERE SourceConfigName=:Source
+		 AND DATEDIFF('mm',CURRENT_TIMESTAMP,TimeProcessed)=0)
+	
+	Quit count
+]]></Implementation>
+</Method>
+
+<Method name="GetMessageById">
+<FormalSpec>Message:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+
+	set sc = ##class(EnsLib.HL7.Message).%OpenId(Message)
+	
+	quit sc.RawContent
+]]></Implementation>
+</Method>
+</Class>
+
+
+</Export>

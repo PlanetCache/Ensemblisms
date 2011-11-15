@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="22" zv="Cache for Windows (x86-32) 2008.2 (Build 526U)" ts="2009-04-19 18:08:04">
+<Class name="Ensemblisms.Episode2.ContinuousIntegration.ContinuousIntegrationTask">
+<IncludeCode>Ensemble</IncludeCode>
+<Super>%SYS.Task.Definition,%Persistent</Super>
+<TimeChanged>61470,65237.284235</TimeChanged>
+<TimeCreated>61454,12968.352963</TimeCreated>
+
+<UDLText name="T">
+<Content><![CDATA[
+/* 
+		Created Date: 03/25/2009 10:37:50.90
+		Author: Ronald J. Sweeney
+		Version:  1.0
+
+		Description: Episode2 - Roll Your Own Continuous Integration Test Harness
+
+		Business Logic Information:	Easy $$$Macro $$$ on the Scheduled Task
+
+	*/
+]]></Content>
+</UDLText>
+
+<Parameter name="TaskName">
+<Default>E2 Ensemblisms Continuous Integration</Default>
+</Parameter>
+
+<Method name="OnTask">
+<Description>
+This is where we stack up the Unit Tests from our Developers
+List them one after another, this task is considered a Test Suite</Description>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set sc = $$$OK
+	set sc =  ##class(%UnitTest.Manager).RunTest("Ensemblisms.Episode2.TestHarness.DTLTest:Ensemblisms.Episode2.TestHarness.DTLTest","/noload/norecursive")
+	//Add More Here
+	
+	Quit sc
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="Ensemblisms.Episode2.Episode2">
+<Super>Ens.Production</Super>
+<TimeChanged>61470,42586.564316</TimeChanged>
+<TimeCreated>61470,41835.81497</TimeCreated>
+
+<XData name="ProductionDefinition">
+<Data><![CDATA[
+<Production Name="Ensemblisms.Episode2.Episode2" LogGeneralTraceEvents="false">
+  <Description>Ensemblisms Episode2 - Roll Your Own Continuous Integration Test Harness</Description>
+  <ActorPoolSize>2</ActorPoolSize>
+  <Item Name="MsgRouter" Category="Episode2" ClassName="EnsLib.HL7.MsgRouter.RoutingEngine" PoolSize="0" Enabled="true" Foreground="false" InactivityTimeout="0" Comment="This handles message routing logic." LogTraceEvents="false" Schedule="">
+    <Setting Target="Host" Name="LocalFacilityApplication">ISC:EnsembleHL7</Setting>
+    <Setting Target="Host" Name="AckType">Application</Setting>
+    <Setting Target="Host" Name="NackCode">Error</Setting>
+    <Setting Target="Host" Name="AddNackERR">0</Setting>
+    <Setting Target="Host" Name="Validation">dm-z</Setting>
+    <Setting Target="Host" Name="BusinessRuleName">Ensemblisms.Episode2.RoutingRule</Setting>
+    <Setting Target="Host" Name="AlertOnBadMessage">0</Setting>
+    <Setting Target="Host" Name="BadMessageHandler"></Setting>
+    <Setting Target="Host" Name="ResponseFrom"></Setting>
+    <Setting Target="Host" Name="ResponseTargetConfigNames"></Setting>
+    <Setting Target="Host" Name="ResponseTimeout">-1</Setting>
+    <Setting Target="Host" Name="ForceSyncSend">0</Setting>
+    <Setting Target="Host" Name="AlertOnError">0</Setting>
+  </Item>
+  <Item Name="Ens.Alert" Category="" ClassName="EnsLib.MsgRouter.RoutingEngine" PoolSize="0" Enabled="true" Foreground="false" InactivityTimeout="0" Comment="This handles Alert routing logic." LogTraceEvents="false" Schedule="">
+    <Setting Target="Host" Name="BusinessRuleName">Ensemblisms.Episode2.AlertRule</Setting>
+  </Item>
+  <Item Name="EMailAlert" Category="" ClassName="EnsLib.EMail.AlertOperation" PoolSize="1" Enabled="false" Foreground="false" InactivityTimeout="0" Comment="This sends alerts via e-mail." LogTraceEvents="false" Schedule="">
+  </Item>
+  <Item Name="PagerAlert" Category="" ClassName="EnsLib.EMail.AlertOperation" PoolSize="1" Enabled="false" Foreground="false" InactivityTimeout="0" Comment="This sends alerts to a pager via e-mail." LogTraceEvents="false" Schedule="">
+  </Item>
+  <Item Name="BadMessageHandler" Category="" ClassName="EnsLib.HL7.Operation.FileOperation" PoolSize="1" Enabled="false" Foreground="false" InactivityTimeout="0" Comment="Bad messages are sent to this operation." LogTraceEvents="false" Schedule="">
+  </Item>
+  <Item Name="HL7FileOperation" Category="Episode2" ClassName="EnsLib.HL7.Operation.FileOperation" PoolSize="1" Enabled="true" Foreground="false" InactivityTimeout="0" Comment="This is a default HL7 File Operation." LogTraceEvents="false" Schedule="">
+    <Setting Target="Host" Name="Filename">episode2.dat</Setting>
+    <Setting Target="Host" Name="AutoBatchParentSegs">0</Setting>
+    <Setting Target="Host" Name="Separators"><![CDATA[|^~\&]]]]><![CDATA[></Setting>
+    <Setting Target="Host" Name="SearchTableClass"></Setting>
+    <Setting Target="Host" Name="DefCharEncoding">Latin1</Setting>
+    <Setting Target="Host" Name="AlertRetryGracePeriod">0</Setting>
+    <Setting Target="Host" Name="RetryInterval">5</Setting>
+    <Setting Target="Host" Name="FailureTimeout">-1</Setting>
+    <Setting Target="Host" Name="AlertOnError">0</Setting>
+    <Setting Target="Host" Name="ArchiveIO">0</Setting>
+    <Setting Target="Host" Name="Framing">AsciiLF</Setting>
+    <Setting Target="Adapter" Name="FilePath">e:\</Setting>
+    <Setting Target="Adapter" Name="Overwrite">0</Setting>
+    <Setting Target="Adapter" Name="Charset">Default</Setting>
+    <Setting Target="Adapter" Name="OpenTimeout">5</Setting>
+  </Item>
+  <Item Name="Episode2Inbound" Category="Episode2" ClassName="EnsLib.HL7.Service.TCPService" PoolSize="1" Enabled="true" Foreground="false" InactivityTimeout="0" Comment="" LogTraceEvents="false" Schedule="">
+    <Setting Target="Host" Name="TargetConfigNames">MsgRouter</Setting>
+    <Setting Target="Host" Name="SearchTableClass">EnsLib.HL7.SearchTable</Setting>
+    <Setting Target="Host" Name="LocalFacilityApplication">ISC:EnsembleHL7</Setting>
+    <Setting Target="Host" Name="Framing">Flexible</Setting>
+    <Setting Target="Host" Name="AckMode">App</Setting>
+    <Setting Target="Host" Name="UseAckCommitCodes">1</Setting>
+    <Setting Target="Host" Name="IgnoreInboundAck">1</Setting>
+    <Setting Target="Host" Name="AddNackERR">0</Setting>
+    <Setting Target="Host" Name="BatchHandling">1Session</Setting>
+    <Setting Target="Host" Name="MessageSchemaCategory">2.3.1:ADT_A01</Setting>
+    <Setting Target="Host" Name="DefCharEncoding">Latin1</Setting>
+    <Setting Target="Host" Name="AlertGracePeriod">0</Setting>
+    <Setting Target="Host" Name="AlertOnError">0</Setting>
+    <Setting Target="Host" Name="ArchiveIO">0</Setting>
+    <Setting Target="Adapter" Name="JobPerConnection">0</Setting>
+    <Setting Target="Adapter" Name="AllowedIPAddresses"></Setting>
+    <Setting Target="Adapter" Name="QSize">100</Setting>
+    <Setting Target="Adapter" Name="CallInterval">5</Setting>
+    <Setting Target="Adapter" Name="Port">6661</Setting>
+    <Setting Target="Adapter" Name="StayConnected">-1</Setting>
+    <Setting Target="Adapter" Name="ReadTimeout">5</Setting>
+    <Setting Target="Adapter" Name="SSLConfig"></Setting>
+  </Item>
+</Production>
+]]></Data>
+</XData>
+</Class>
+
+
+<Class name="Ensemblisms.Episode2.ExampleTransforms.ADTToWorldDTL">
+<Description>
+Episode2 sample DTL for Ensemblisms.</Description>
+<ProcedureBlock>1</ProcedureBlock>
+<Super>Ens.DataTransform</Super>
+<TimeChanged>61470,52189.919096</TimeChanged>
+<TimeCreated>61470,40988.291786</TimeCreated>
+
+<UDLText name="T">
+<Content><![CDATA[
+/* 
+		Created Date: 03/25/2009 10:37:50.90
+		Author: Ronald J. Sweeney
+		Version:  1.0
+
+		Description: Episode2 - Roll Your Own Continuous Integration Test Harness
+
+		Business Logic Information:	Update MSH10 will ya!
+
+	*/
+]]></Content>
+</UDLText>
+
+<Method name="Transform">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>source:EnsLib.HL7.Message,target:EnsLib.HL7.Message</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	SET %Debug = 0
+	SET sc = $$$OK
+	TRY {
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		;; Make sure there's a source message
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		IF ('$IsObject(source)) {
+			SET sc = $System.Status.Error($$$GeneralError, "No source object")
+			QUIT
+		}
+
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		;; Create new target message object
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		SET target = ##class(EnsLib.HL7.Message).%New()
+		QUIT:'$IsObject(target)
+
+ 		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		;; IF the original message has no DocType,
+		;; explicitly set it so can use
+		;; virtual document properties
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		SET source.DocType    = "2.3.1:ADT_A01"
+
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		;; Copy DocType and separators
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		SET target.DocType    = "2.3.1:ADT_A01"
+		SET target.Separators = source.Separators
+
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		;; assign the parameters to the global library object
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		
+
+		;;;;;;;;;;;;;;;;;;;;;
+        ;; Transform segments
+        ;;;;;;;;;;;;;;;;;;;;;
+		;IF (%Debug = 1 ) {$$$LOGINFO("Logging Turned on in DTL")}
+		SET sc = ..TransformMSH(source, target)
+		Quit:$System.Status.IsError(sc)
+		;SET sc = ..TransformXXX()
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		;; re-assign target back to the global message before return
+		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+		SET target = target
+
+	}  ;; close out TRY
+
+	CATCH (exception) {
+		SET sc = exception.AsStatus()
+		SET sc = target.SETValueAt(sc, "MSH:3") ;;; error documentation in MSH:3
+	}  ;; close out CATCH
+	
+	Quit sc
+]]></Implementation>
+</Method>
+
+<UDLText name="T">
+<Content><![CDATA[
+// close out Method Transform
+
+]]></Content>
+</UDLText>
+
+<Method name="TransformMSH">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>source:EnsLib.HL7.Message,target:EnsLib.HL7.Message</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	;;;;;;;;;;;;;
+	;; read input
+	;;;;;;;;;;;;;
+
+	;;; Assumes MSH exists, you know what Benny Hill said about ASSUME?
+	
+	SET timeStamp = ##class(Ens.Util.Time).FormatDateTime("%Y%m%d%H%M%S%N")
+
+	;;;;;;;;;;;;;;;;
+	;; assign output
+	;;;;;;;;;;;;;;;;
+	
+	;IF (%Debug = 1 ) {$$$LOGINFO("Inside TransformMSH Method")}
+	
+	;;; Copy whole MSH This is our Red Failure
+	Set sc = target.CopyValues(source, "MSH", "MSH", "set", "")
+	
+	//Here is our code to go Green
+	//Set sc = target.SetValueAt(timeStamp, "MSH:10")
+
+	QUIT sc
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^Ensemblisms923A.ADTToWorldDTLD</DataLocation>
+<DefaultData>ADTToWorldDTLDefaultData</DefaultData>
+<IdLocation>^Ensemblisms923A.ADTToWorldDTLD</IdLocation>
+<IndexLocation>^Ensemblisms923A.ADTToWorldDTLI</IndexLocation>
+<StreamLocation>^Ensemblisms923A.ADTToWorldDTLS</StreamLocation>
+<Data name="ADTToWorldDTLDefaultData">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Ensemblisms.Episode2.TestHarness.DTLTest">
+<Super>%UnitTest.TestCase,Ens.DataTransform</Super>
+<TimeChanged>61470,50937.258772</TimeChanged>
+<TimeCreated>60171,38780.673553</TimeCreated>
+
+<UDLText name="T">
+<Content><![CDATA[
+/* 
+		Date: 1/15/2009
+		Author: Ronald Jay Sweeney
+		Description: Unit Test for ADTToWorldDTL	
+	*/
+]]></Content>
+</UDLText>
+
+<Property name="Source">
+<Type>%String</Type>
+<InitialExpression>"Episode2Inbound"</InitialExpression>
+</Property>
+
+<UDLText name="T">
+<Content><![CDATA[
+//Property Target As EnsLib.HL7.Message;
+
+]]></Content>
+</UDLText>
+
+<Method name="OnBeforeAllTests">
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	
+	Set sc = $$$OK
+	Set MsgId = ..GetRandomTestMessage(..Source)
+	Set SourceMessage = ##class(EnsLib.HL7.Message).%OpenId(MsgId)
+	
+	Set %SourceMessage = SourceMessage
+	$$$LOGINFO("*****************Episode 2*************************")
+	
+	Set sc = ##class(Ensemblisms.Episode2.ExampleTransforms.ADTToWorldDTL).Transform(SourceMessage, .%Target)
+	
+	
+	Quit sc
+]]></Implementation>
+</Method>
+
+<Method name="TestMSH">
+<Implementation><![CDATA[
+	
+	do $$$AssertNotEquals(%Target.GetValueAt("MSH:10", ,.sc),%SourceMessage.GetValueAt("MSH:10", ,.sc), "Checking for delta on Control Id")
+	//do $$$AssertNotEquals(%Target.GetValueAt("MSH:6", ,.sc),"RR", "Checking MSH:6, should not equal RR")
+]]></Implementation>
+</Method>
+
+<Method name="GetRandomTestMessage">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>Source:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+
+	Set debug = 0
+	Set MsgID="0"
+	Set (tsdatetime,tedatetime)=""
+	
+	// Get Current time in internal UTC format.
+	Set tnow = $ZTIMESTAMP
+	If debug W !,"$ZTIMESTAMP NOW UTC: "_tnow
+	
+	// Convert Current date/time to local time $H format
+	Set tdayst = $ZUTIL(193,tnow,0)
+	
+	// get Date/time of 1 day ago
+	Set tyday = (+tdayst-1)_","_$Piece(tdayst,",",2)
+		
+	// Convert 24 hours ago to UTC internal format
+	Set tyday = $ZUTIL(193,tyday,1)
+	
+	If debug W !,"24hours ago UTC: "_tyday
+	If debug W !,"tday now UTC: "_tdayst
+	
+	// set Start date for query and Convert the date to ODBC format
+	Set tsdatetime=$ZDATETIME(tyday,3,1,3)
+	
+	If debug W !,"Q1 start Date after convert to UTC: ",tsdatetime
+		
+	// set End date for query and Convert the date to ODBC format
+	Set tedatetime=$ZDATETIME(tnow,3,1,3)
+	If debug W !,"Q1 End - NOW timestamp after convert to UTC :"_tedatetime
+		
+	&sql(SELECT TOP 1 mh.ID, mh.MessageBodyId into :MsgID, :MsgBId 
+	FROM Ens.MessageHeader mh
+	WHERE SourceConfigName=:Source
+	AND mh.ID = mh.SessionId
+	AND mh.MessageBodyClassName = 'EnsLib.HL7.Message'
+	AND mh.TimeCreated between :tsdatetime and :tedatetime)	
+	
+	Quit MsgBId
+]]></Implementation>
+</Method>
+</Class>
+
+
+</Export>
